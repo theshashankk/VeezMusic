@@ -40,12 +40,10 @@ async def channel_pause(_, message: Message):
         await message.reply("❌ `NOT_LINKED`\n\n• **The userbot could not play music, due to group not linked to channel yet.**")
         return
     chat_id = chid
-    if (chat_id not in callsmusic.pytgcalls.active_calls) or (
-        callsmusic.pytgcalls.active_calls[chat_id] == "paused"
-    ):
+    if chat_id in callsmusic.pytgcalls.active_calls:
         await message.reply_text("❌ **no music is currently playing**")
     else:
-        callsmusic.pytgcalls.pause_stream(chat_id)
+        await callsmusic.pytgcalls.pause_stream(chat_id)
         await message.reply_text("▶ **Track paused.**\n\n• **To resume the playback, use the**\n» `/cresume` command.")
 
 
@@ -61,12 +59,10 @@ async def channel_resume(_, message: Message):
         await message.reply("❌ `NOT_LINKED`\n\n• **The userbot could not play music, due to group not linked to channel yet.**")
         return
     chat_id = chid
-    if (chat_id not in callsmusic.pytgcalls.active_calls) or (
-        callsmusic.pytgcalls.active_calls[chat_id] == "playing"
-    ):
+    if chat_id in callsmusic.pytgcalls.active_calls:
         await message.reply_text("❌ **no music is currently playing**")
     else:
-        callsmusic.pytgcalls.resume_stream(chat_id)
+        await callsmusic.pytgcalls.resume_stream(chat_id)
         await message.reply_text("⏸ **Track resumed.**\n\n• **To pause the playback, use the**\n» `/cpause` command.")
 
 
@@ -82,7 +78,7 @@ async def channel_stop(_, message: Message):
         await message.reply("❌ `NOT_LINKED`\n\n• **The userbot could not play music, due to group not linked to channel yet.**")
         return
     chat_id = chid
-    if chat_id not in callsmusic.pytgcalls.active_calls:
+    if chat_id in callsmusic.pytgcalls.active_calls:
         await message.reply_text("❌ **no music is currently playing**")
     else:
         try:
@@ -90,7 +86,7 @@ async def channel_stop(_, message: Message):
         except QueueEmpty:
             pass
 
-        callsmusic.pytgcalls.leave_group_call(chat_id)
+        await callsmusic.pytgcalls.leave_group_call(chat_id)
         await message.reply_text("✅ **music playback has ended**")
 
 
@@ -107,16 +103,19 @@ async def skip(_, message: Message):
         await message.reply("❌ `NOT_LINKED`\n\n• **The userbot could not play music, due to group not linked to channel yet.**")
         return
     chat_id = chid
-    if chat_id not in callsmusic.pytgcalls.active_calls:
+    if chat_id in callsmusic.pytgcalls.active_calls:
         await message.reply_text("❌ **no music is currently playing**")
     else:
         callsmusic.queues.task_done(chat_id)
 
         if callsmusic.queues.is_empty(chat_id):
-            callsmusic.pytgcalls.leave_group_call(chat_id)
+            await callsmusic.pytgcalls.leave_group_call(chat_id)
         else:
-            callsmusic.pytgcalls.change_stream(
-                chat_id, callsmusic.queues.get(chat_id)["file"]
+            await callsmusic.pytgcalls.change_stream(
+                chat_id, 
+                InputAudioStream(
+                    callsmusic.queues.get(chat_id)["file"],
+                ),
             )
 
     qeue = que.get(chat_id)
