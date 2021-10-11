@@ -7,6 +7,8 @@ import requests
 from pyrogram import Client, filters
 from pyrogram.errors import UserAlreadyParticipant
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pytgcalls import StreamType
+from pytgcalls.types.input_stream import InputAudioStream
 from youtube_search import YoutubeSearch
 
 from callsmusic import callsmusic
@@ -201,20 +203,16 @@ async def m_cb(b, cb):
 
     the_data = cb.message.reply_markup.inline_keyboard[1][0].callback_data
     if type_ == "cpause":
-        if (chet_id not in callsmusic.pytgcalls.active_calls) or (
-            callsmusic.pytgcalls.active_calls[chet_id] == "paused"
-        ):
+        if chet_id in callsmusic.pytgcalls.active_calls:
             await cb.answer("Chat is not connected!", show_alert=True)
         else:
-            callsmusic.pytgcalls.pause_stream(chet_id)
+            await callsmusic.pytgcalls.pause_stream(chet_id)
 
             await cb.answer("music paused!")
             await cb.message.edit(updated_stats(conv, qeue), reply_markup=r_ply("play"))
 
     elif type_ == "cplay":
-        if (chet_id not in callsmusic.pytgcalls.active_calls) or (
-            callsmusic.pytgcalls.active_calls[chet_id] == "playing"
-        ):
+        if chet_id in callsmusic.pytgcalls.active_calls:
             await cb.answer("chat is not connected!", show_alert=True)
         else:
             callsmusic.pytgcalls.resume_stream(chet_id)
@@ -247,20 +245,16 @@ async def m_cb(b, cb):
         await cb.message.edit(msg)
 
     elif type_ == "cresume":
-        if (chet_id not in callsmusic.pytgcalls.active_calls) or (
-            callsmusic.pytgcalls.active_calls[chet_id] == "playing"
-        ):
+        if chet_id in callsmusic.pytgcalls.active_calls:
             await cb.answer("chat is not connected or already playing", show_alert=True)
         else:
-            callsmusic.pytgcalls.resume_stream(chet_id)
+            await callsmusic.pytgcalls.resume_stream(chet_id)
             await cb.answer("music resumed!")
     elif type_ == "cpuse":
-        if (chet_id not in callsmusic.pytgcalls.active_calls) or (
-            callsmusic.pytgcalls.active_calls[chet_id] == "paused"
-        ):
+        if chet_id in callsmusic.pytgcalls.active_calls:
             await cb.answer("chat is not connected or already paused", show_alert=True)
         else:
-            callsmusic.pytgcalls.pause_stream(chet_id)
+            await callsmusic.pytgcalls.pause_stream(chet_id)
 
             await cb.answer("music paused!")
     elif type_ == "ccls":
@@ -288,17 +282,22 @@ async def m_cb(b, cb):
     elif type_ == "cskip":
         if qeue:
             qeue.pop(0)
-        if chet_id not in callsmusic.pytgcalls.active_calls:
+        if chet_id in callsmusic.pytgcalls.active_calls:
             await cb.answer("chat is not connected!", show_alert=True)
         else:
             queues.task_done(chet_id)
 
             if queues.is_empty(chet_id):
-                callsmusic.pytgcalls.leave_group_call(chet_id)
+                await callsmusic.pytgcalls.leave_group_call(chet_id)
 
                 await cb.message.edit("» no more playlist\n» userbot leaving voice chat !")
             else:
-                callsmusic.pytgcalls.change_stream(chet_id, queues.get(chet_id)["file"])
+                await callsmusic.pytgcalls.change_stream(
+                    chet_id, 
+                    InputAudioStream(
+                        queues.get(chet_id)["file"],
+                    ),
+                )
                 await cb.answer("Skipped")
                 await cb.message.edit((m_chat, qeue), reply_markup=r_ply(the_data))
                 await cb.message.reply_text(
@@ -312,7 +311,7 @@ async def m_cb(b, cb):
             except QueueEmpty:
                 pass
 
-            callsmusic.pytgcalls.leave_group_call(chet_id)
+            await callsmusic.pytgcalls.leave_group_call(chet_id)
             await cb.message.edit("music player was disconnected from voice chat !")
         else:
             await cb.answer("chat is not connected !", show_alert=True)
@@ -399,8 +398,12 @@ async def play(_, message: Message):
             entities = message.reply_to_message.entities + entities
         elif message.reply_to_message.caption_entities:
             entities = message.reply_to_message.entities + entities
-        urls = [entity for entity in entities if entity.type == "url"]
-        text_links = [entity for entity in entities if entity.type == "text_link"]
+        urls = [
+            entity for entity in entities if entity.type == "url"
+        ]
+        text_links = [
+            entity for entity in entities if entity.type == "text_link"
+        ]
     else:
         urls = None
     if text_links:
@@ -443,7 +446,7 @@ async def play(_, message: Message):
     elif urls:
         query = toxt
         await lel.edit("🎵 **sending audio...**")
-        ydl_opts = {"format": "bestaudio[ext=m4a]"}
+        ydl_opts = {"format": "bestaudio/best"}
         try:
             results = YoutubeSearch(query, max_results=1).to_dict()
             url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -486,7 +489,7 @@ async def play(_, message: Message):
             query += " " + str(i)
         print(query)
         await lel.edit("🎵 **sending audio...**")
-        ydl_opts = {"format": "bestaudio[ext=m4a]"}
+        ydl_opts = {"format": "bestaudio/best"}
         try:
             results = YoutubeSearch(query, max_results=1).to_dict()
             url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -549,7 +552,12 @@ async def play(_, message: Message):
         loc = file_path
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
-        callsmusic.pytgcalls.join_group_call(chat_id, file_path)
+        await callsmusic.pytgcalls.join_group_call(
+            chat_id, 
+            InputAudioStream(
+                file_path,
+            ),
+        )
         await message.reply_photo(
             photo="final.png",
             caption=f"🏷 **Name:** [{title[:60]}]({url})\n⏱ **Duration:** `{duration}`\n💡 **Status:** `Playing`\n"
