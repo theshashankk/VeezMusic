@@ -557,6 +557,7 @@ async def play(_, message: Message):
             InputAudioStream(
                 file_path,
             ),
+            stream_type=StreamType().local_stream,
         )
         await message.reply_photo(
             photo="final.png",
