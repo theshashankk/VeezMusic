@@ -4,6 +4,7 @@ from asyncio.queues import QueueEmpty
 
 from pyrogram import Client, filters
 from pyrogram.types import Message
+from pytgcalls.types.input_stream import InputAudioStream
 
 from config import que, BOT_USERNAME
 from cache.admins import admins
