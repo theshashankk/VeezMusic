@@ -63,7 +63,7 @@ async def start(c: Client, m: Union[Message, CallbackQuery]):
     start_msg = f"✨ **Welcome {message.from_user.mention} !**\n\n💭 **[{BOT_NAME}](https://t.me/{BOT_USERNAME}) allows you to play music on groups through the new Telegram's voice chats!**\n\n💡 **Find out all the Bot's commands and how they work by clicking on the » 📚 Commands button!**\n\n❔ **To know how to use this bot, please click on the » ❓ Basic Guide button!**"
 
     if msg.chat.type == "private":
-        keyboard = InlineKeyboardMarkup(
+        keyboard = InlineKeyboardMarkup((
             [
                 [
                     InlineKeyboardButton(
