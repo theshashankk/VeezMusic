@@ -284,7 +284,7 @@ async def cbhelps(_, query: CallbackQuery):
                     InlineKeyboardButton("📗 Sudo Cmd", callback_data="cblab"),
                 ],
                 [InlineKeyboardButton("📙 Owner Cmd", callback_data="cbmoon")],
-                [InlineKeyboardButton("🔙 Go Back", callback_data="start_back")],
+                [InlineKeyboardButton("🔙 Go Back", callback_data="cbstart")],
             ]
         ),
     )
@@ -302,7 +302,7 @@ async def cbguides(_, query: CallbackQuery):
 
 ⚡ __Powered by {BOT_NAME} A.I__""",
         reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("🔙 Go Back", callback_data="start_back")]]
+            [[InlineKeyboardButton("🔙 Go Back", callback_data="cbstart")]]
         ),
     )
 
