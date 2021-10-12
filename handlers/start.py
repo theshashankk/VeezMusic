@@ -51,19 +51,14 @@ async def _human_time_duration(seconds):
 @Client.on_message(
     command(["start", f"start@{BOT_USERNAME}"]) & filters.private & ~filters.edited
 )
-@Client.on_callback_query(filters.regex("^start_back$"))
-async def start(c: Client, m: Union[Message, CallbackQuery]):
-    if isinstance(m, CallbackQuery):
-        msg = m.message
-        method = msg.edit_text
-    else:
-        msg = m
-        method = msg.reply_text
-    
-    start_msg = f"✨ **Welcome {message.from_user.mention} !**\n\n💭 **[{BOT_NAME}](https://t.me/{BOT_USERNAME}) allows you to play music on groups through the new Telegram's voice chats!**\n\n💡 **Find out all the Bot's commands and how they work by clicking on the » 📚 Commands button!**\n\n❔ **To know how to use this bot, please click on the » ❓ Basic Guide button!**"
-
-    if msg.chat.type == "private":
-        keyboard = InlineKeyboardMarkup((
+async def start_(client: Client, message: Message):
+    await message.reply_text(
+        f"""<b>✨ **Welcome {message.from_user.mention} !** \n
+💭 **[{BOT_NAME}](https://t.me/{BOT_USERNAME}) allows you to play music on groups through the new Telegram's voice chats!**
+💡 **Find out all the Bot's commands and how they work by clicking on the\n» 📚 Commands button!**
+❔ **To know how to use this bot, please click on the » ❓ Basic Guide button!**
+</b>""",
+        reply_markup=InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
@@ -93,7 +88,6 @@ async def start(c: Client, m: Union[Message, CallbackQuery]):
         ),
         disable_web_page_preview=True,
     )
-    await method(start_msg, reply_markup=keyboard)
 
 
 @Client.on_message(
