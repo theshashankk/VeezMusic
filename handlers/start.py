@@ -1,11 +1,17 @@
 import os
 from time import time
+from typing import Union
 from sys import version_info
 from datetime import datetime
 
 from pyrogram import Client, filters
 from pyrogram import __version__ as __pyro_version__
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from config import BOT_NAME, BOT_USERNAME, GROUP_SUPPORT, OWNER_NAME, UPDATES_CHANNEL, ALIVE_NAME, ALIVE_IMG
 from helpers.decorators import sudo_users_only
@@ -45,16 +51,19 @@ async def _human_time_duration(seconds):
 @Client.on_message(
     command(["start", f"start@{BOT_USERNAME}"]) & filters.private & ~filters.edited
 )
-async def start_(client: Client, message: Message):
-    await message.reply_text(
-        f"""<b>✨ **Welcome {message.from_user.mention} !** \n
-💭 **[{BOT_NAME}](https://t.me/{BOT_USERNAME}) allows you to play music on groups through the new Telegram's voice chats!**
+@Client.on_callback_query(filters.regex("^start_back$"))
+async def start(c: Client, m: Union[Message, CallbackQuery]):
+    if isinstance(m, CallbackQuery):
+        msg = m.message
+        method = msg.edit_text
+    else:
+        msg = m
+        method = msg.reply_text
+    
+    start_msg = f"✨ **Welcome {message.from_user.mention} !**\n\n💭 **[{BOT_NAME}](https://t.me/{BOT_USERNAME}) allows you to play music on groups through the new Telegram's voice chats!**\n\n💡 **Find out all the Bot's commands and how they work by clicking on the » 📚 Commands button!**\n\n❔ **To know how to use this bot, please click on the » ❓ Basic Guide button!**"
 
-💡 **Find out all the Bot's commands and how they work by clicking on the\n» 📚 Commands button!**
-
-❔ **To know how to use this bot, please click on the » ❓ Basic Guide button!**
-</b>""",
-        reply_markup=InlineKeyboardMarkup(
+    if msg.chat.type == "private":
+        keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
@@ -84,6 +93,7 @@ async def start_(client: Client, message: Message):
         ),
         disable_web_page_preview=True,
     )
+    await method(start_msg, reply_markup=keyboard)
 
 
 @Client.on_message(
