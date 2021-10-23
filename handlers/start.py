@@ -17,6 +17,7 @@ from helpers.filters import command
 from pyrogram import Client, filters
 from pyrogram import __version__ as pyrover
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from helpers.func import get_yt_details, download_yt_thumbnails
 
 __major__ = 0
 __minor__ = 2
