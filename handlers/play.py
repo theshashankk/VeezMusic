@@ -64,7 +64,6 @@ def transcode(filename):
     ).overwrite_output().run()
     os.remove(filename)
 
-
 def convert_seconds(seconds):
     seconds = seconds % (24 * 3600)
     seconds %= 3600
@@ -72,11 +71,9 @@ def convert_seconds(seconds):
     seconds %= 60
     return "%02d:%02d" % (minutes, seconds)
 
-
 def time_to_seconds(time):
     stringt = str(time)
     return sum(int(x) * 60 ** i for i, x in enumerate(reversed(stringt.split(":"))))
-
 
 def changeImageSize(maxWidth, maxHeight, image):
     widthRatio = maxWidth / image.size[0]
@@ -85,7 +82,6 @@ def changeImageSize(maxWidth, maxHeight, image):
     newHeight = int(heightRatio * image.size[1])
     newImage = image.resize((newWidth, newHeight))
     return newImage
-
 
 async def generate_cover(title, thumbnail, ctitle):
     async with aiohttp.ClientSession() as session, session.get(thumbnail) as resp:
@@ -103,9 +99,9 @@ async def generate_cover(title, thumbnail, ctitle):
     img = Image.open("temp.png")
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("etc/typold.otf", 55)
-    font2 = ImageFont.truetype("etc/finalfont.ttf", 80)
-    draw.text((25, 520), f"Playing on {ctitle[:8]}", (0, 0, 0), font=font)
-    draw.text((25, 605), f"{title[:15]}...", (0, 0, 0), font=font2)
+    font2 = ImageFont.truetype("etc/finalfont.ttf", 75)
+    draw.text((25, 530), f"Playing on {ctitle[:8]}", (0, 0, 0), font=font)
+    draw.text((25, 615), f"{title[:15]}...", (0, 0, 0), font=font2)
     img.save("final.png")
     os.remove("temp.png")
     os.remove("background.png")
@@ -152,8 +148,8 @@ async def playlist(client, message):
             msg += f"\n• Req by {usr}"
     await message.reply_text(msg, reply_markup=keyboard)
 
-
 # ============================= Settings =========================================
+
 def updated_stats(chat, queue, vol=100):
     if chat.id in callsmusic.pytgcalls.active_calls:
         stats = "⚙ settings for **{}**".format(chat.title)
@@ -331,13 +327,13 @@ async def m_cb(b, cb):
     cb.message.chat.id
     m_chat = cb.message.chat
 
-    the_data = cb.message.reply_markup.inline_keyboard[1][0].callback_data
+    cb.message.reply_markup.inline_keyboard[1][0].callback_data
     if type_ == "pause":
         if (chet_id not in callsmusic.pytgcalls.active_calls) or (
             callsmusic.pytgcalls.active_calls[chet_id] == "paused"
         ):
             await cb.answer(
-                "assistant is not connected to voice chat !", show_alert=True
+                "userbot is not connected to voice chat.", show_alert=True
             )
         else:
             callsmusic.pytgcalls.pause_stream(chet_id)
@@ -352,7 +348,7 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.active_calls[chet_id] == "playing"
         ):
             await cb.answer(
-                "assistant is not connected to voice chat !", show_alert=True
+                "userbot is not connected to voice chat.", show_alert=True
             )
         else:
             callsmusic.pytgcalls.resume_stream(chet_id)
@@ -474,7 +470,7 @@ async def m_cb(b, cb):
                 )
         else:
             await cb.answer(
-                "assistant is not connected to voice chat !", show_alert=True
+                "userbot is not connected to voice chat.", show_alert=True
             )
 
 
@@ -539,7 +535,7 @@ async def play(_, message: Message):
         await USER.get_chat(chid)
     except:
         await lel.edit(
-            f"» **userbot was banned in this group !**\n\n**unban @{ASSISTANT_NAME} and added again to this group manually."
+            f"» **userbot not in this chat or is banned in this group !**\n\n**unban @{ASSISTANT_NAME} and added again to this group manually, or type /reload then try again."
         )
         return
     text_links = None
@@ -603,7 +599,7 @@ async def play(_, message: Message):
     elif urls:
         query = toxt
         await lel.edit("🔎 **searching...**")
-        ydl_opts = {"format": "bestaudio/best"}
+        ydl_opts = {"format": "bestaudio[ext=m4a]"}
         try:
             results = YoutubeSearch(query, max_results=1).to_dict()
             url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -616,7 +612,6 @@ async def play(_, message: Message):
             open(thumb_name, "wb").write(thumb.content)
             duration = results[0]["duration"]
             results[0]["url_suffix"]
-            results[0]["views"]
         except Exception as e:
             await lel.delete()
             await message.reply_photo(
@@ -647,7 +642,7 @@ async def play(_, message: Message):
         for i in message.command[1:]:
             query += " " + str(i)
         print(query)
-        ydl_opts = {"format": "bestaudio/best"}
+        ydl_opts = {"format": "bestaudio[ext=m4a]"}
 
         try:
             results = YoutubeSearch(query, max_results=5).to_dict()
@@ -689,10 +684,11 @@ async def play(_, message: Message):
                     [InlineKeyboardButton(text="🗑 Close", callback_data="cls")],
                 ]
             )
-            await _.send_photo(
-                chid, photo=f"{THUMB_IMG}", caption=toxxt, reply_markup=keyboard
+            await message.reply_photo(
+                photo=f"{THUMB_IMG}",
+                caption=toxxt,
+                reply_markup=keyboard,
             )
-
             await lel.delete()
             
             return
@@ -711,7 +707,6 @@ async def play(_, message: Message):
                 open(thumb_name, "wb").write(thumb.content)
                 duration = results[0]["duration"]
                 results[0]["url_suffix"]
-                results[0]["views"]
             except Exception as e:
                 await lel.delete()
                 await message.reply_photo(
@@ -747,8 +742,7 @@ async def play(_, message: Message):
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
         await lel.delete()
-        await _.send_photo(
-            chid,
+        await message.reply_photo(
             photo="final.png",
             caption=f"💡 **Track added to queue »** `{position}`\n\n🏷 **Name:** [{title[:35]}...]({url})\n⏱ **Duration:** `{duration}`\n🎧 **Request by:** {message.from_user.mention}",
             reply_markup=keyboard,
@@ -770,8 +764,7 @@ async def play(_, message: Message):
             )
             return
         await lel.delete()
-        await _.send_photo(
-            chid,
+        await message.reply_photo(
             photo="final.png",
             caption=f"🏷 **Name:** [{title[:70]}]({url})\n⏱ **Duration:** `{duration}`\n💡 **Status:** `Playing`\n"
             + f"🎧 **Request by:** {message.from_user.mention}",
@@ -810,9 +803,9 @@ async def lol_cb(b, cb):
         return
     useer_id = int(useer_id)
     if cb.from_user.id != useer_id:
-        await cb.answer("💡 sorry, this is not for you !", show_alert=True)
+        await cb.answer("💡 sorry this is not for you !", show_alert=True)
         return
-    await cb.answer("🔄 downloading song you requested...", show_alert=True)
+    await cb.answer("💡 downloading song you requested...", show_alert=True)
     x = int(x)
     try:
         cb.message.reply_to_message.from_user.first_name
@@ -961,7 +954,7 @@ async def ytplay(_, message: Message):
         await USER.get_chat(chid)
     except:
         await lel.edit(
-            f"💡 **userbot was banned in this group !** \n\n**unban @{ASSISTANT_NAME} and add to this group again manually.**"
+            f"» **userbot not in this chat or is banned in this group !**\n\n**unban @{ASSISTANT_NAME} and add to this group again manually, or type /reload then try again.**"
         )
         return
 
@@ -970,7 +963,7 @@ async def ytplay(_, message: Message):
         query += " " + str(i)
     print(query)
     await lel.edit("🔄 **connecting to vc...**")
-    ydl_opts = {"format": "bestaudio/best"}
+    ydl_opts = {"format": "bestaudio[ext=m4a]"}
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
         url = f"https://youtube.com{results[0]['url_suffix']}"
@@ -983,7 +976,6 @@ async def ytplay(_, message: Message):
         open(thumb_name, "wb").write(thumb.content)
         duration = results[0]["duration"]
         results[0]["url_suffix"]
-        results[0]["views"]
 
     except Exception as e:
         await lel.delete()
@@ -1027,8 +1019,7 @@ async def ytplay(_, message: Message):
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
         await lel.delete()
-        await _.send_photo(
-            chid,
+        await message.reply_photo(
             photo="final.png",
             caption=f"💡 **Track added to queue »** `{position}`\n\n🏷 **Name:** [{title[:35]}...]({url})\n⏱ **Duration:** `{duration}`\n🎧 **Request by:** {message.from_user.mention}",
             reply_markup=keyboard,
@@ -1050,8 +1041,7 @@ async def ytplay(_, message: Message):
             )
             return
         await lel.delete()
-        await _.send_photo(
-            chid,
+        await message.reply_photo(
             photo="final.png",
             caption=f"🏷 **Name:** [{title[:70]}]({url})\n⏱ **Duration:** `{duration}`\n💡 **Status:** `Playing`\n"
             + f"🎧 **Request by:** {message.from_user.mention}",
