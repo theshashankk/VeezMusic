@@ -88,7 +88,35 @@ async def start_(client: Client, message: Message):
         ),
         disable_web_page_preview=True,
     )
-
+    if len(message.command) == 2:
+        query = message.command[1]
+        if query.startswith("ytinfo_"):
+            yt_link = query.split("ytinfo_")[1]
+            details = get_yt_details(yt_link)
+            thumb_url = details["thumbnails"]
+            thumb_file = download_yt_thumbnails(thumb_url, user_id)
+            result_text = (
+                f'{emoji.LABEL} **Title**: {details['title']}\n'
+                f'{emoji.MEGAPHONE} **channel**: {details['channel']}\n'
+                f'{emoji.STOPWATCH} **duration**: {details['duration']}\n'
+                f'{emoji.THUMBS_UP} **likes**: {details['likes']}\n'
+                f'{emoji.THUMBS_DOWN} **dislikes**: {details['dislikes']}\n'
+                f'{emoji.STAR} **rating**: {details['rating']}\n'
+            )
+            await message.reply_photo(
+                photo=thumb_file,
+                caption=result_text,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(f'{emoji.MOVIE_CAMERA} watch on youtube', url=f'{details['link']}'),
+                        ],
+                        [
+                            InlineKeyboardButton(f'{emoji.WASTEBASKET} close', callback_data='cls')
+                        ]
+                    ]
+                )
+            )
 
 @Client.on_message(
     command(["start", f"start@{BOT_USERNAME}"]) & filters.group & ~filters.edited
